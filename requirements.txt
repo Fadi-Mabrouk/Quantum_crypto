@@ -1,0 +1,12 @@
+
+# Core Requirements
+Django==4.2.5
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Security
+cryptography==41.0.3
+
+# Development
+pytest==7.4.0
+pytest-django==4.5.2
