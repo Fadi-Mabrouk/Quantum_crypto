@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quantum Safe Lock</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #app {
+            background: #222;
+            padding: 20px 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            color: #00e5ff;
+        }
+
+        .info {
+            margin: 10px 0;
+            font-size: 1.1em;
+        }
+
+        .status span {
+            font-weight: bold;
+        }
+
+        .quantum-true {
+            color: #4CAF50;
+        }
+
+        .quantum-false {
+            color: #F44336;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        button {
+            margin-top: 10px;
+            width: 100%;
+            padding: 12px;
+            background: #00e5ff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #00b8d4;
+        }
+
+        #result {
+            margin-top: 10px;
+            font-size: 1em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h2>Quantum Safe Lock</h2>
+        <div class="info">Current Code: <span id="current-code">------</span></div>
+        <div class="info">Expires in: <span id="countdown">30</span>s</div>
+        <div class="info status">Source: <span id="quantum-status" class="quantum-true">Quantum</span></div>
+
+        <input type="text" id="code-input" placeholder="Enter code" maxlength="12">
+        <button id="unlock-btn">UNLOCK</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let countdownTimer;  
+
+function startTimer(seconds) {
+    clearInterval(countdownTimer); 
+    let time = Math.floor(seconds);
+    document.getElementById('countdown').textContent = time;
+
+    countdownTimer = setInterval(() => {
+        time -= 1;
+        document.getElementById('countdown').textContent = time;
+        if (time <= 0) {
+            clearInterval(countdownTimer);
+            updateCode();  
+        }
+    }, 1000);
+}
+
+function updateCode() {
+    fetch('/api/code/')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('current-code').textContent = data.code;
+            document.getElementById('quantum-status').className =
+                data.is_quantum ? 'quantum-true' : 'quantum-false';
+            document.getElementById('quantum-status').textContent =
+                data.is_quantum ? 'Quantum' : 'Classical';
+
+            startTimer(data.expires_in);  
+        });
+}
+
+
+        function startTimer(seconds) {
+            let time = Math.floor(seconds);
+            document.getElementById('countdown').textContent = time;
+            const timer = setInterval(() => {
+                document.getElementById('countdown').textContent = --time;
+                if (time <= 0) {
+                    clearInterval(timer);
+                    updateCode();
+                }
+            }, 1000);
+        }
+
+        document.getElementById('unlock-btn').addEventListener('click', () => {
+            const code = document.getElementById('code-input').value;
+            const formData = new FormData();
+            formData.append('code', code);
+
+            fetch('/api/verify/', {
+                method: 'POST',
+                body: formData
+            }).then(res => res.json())
+              .then(data => {
+                  const resultEl = document.getElementById('result');
+                  if (data.valid) {
+                      resultEl.textContent = "✅ Safe unlocked!";
+                      resultEl.style.color = "#4CAF50";
+                  } else {
+                      resultEl.textContent = "❌ Invalid code";
+                      resultEl.style.color = "#F44336";
+                  }
+              });
+        });
+
+
+        updateCode();
+    </script>
+</body>
+</html>
