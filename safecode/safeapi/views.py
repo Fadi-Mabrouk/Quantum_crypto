@@ -3,7 +3,6 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import SafeCode
 from django.utils import timezone
 from django.shortcuts import render
-
 @csrf_exempt
 def current_code(request):
     """Get or generate current code"""
